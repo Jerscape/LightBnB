@@ -1,8 +1,9 @@
 const path = require("path");
 const express = require("express");
 const cookieSession = require("cookie-session");
+const morgan = require('morgan');
 
-const app = express();
+const app = express()
 const port = process.env.PORT || 3000;
 
 // middleware
@@ -15,6 +16,7 @@ app.use(
     keys: ["key1"],
   })
 );
+app.use(morgan('dev'))
 
 const apiRoutes = require("./routes/apiRoutes");
 const userRoutes = require("./routes/userRoutes");

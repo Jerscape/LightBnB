@@ -15,6 +15,7 @@ router.get("/properties", (req, res) => {
 
 router.get("/reservations", (req, res) => {
   const userId = req.session.userId;
+  console.log("route userid: ", userId)
   if (!userId) {
     return res.send({ error: "error" });
   }
