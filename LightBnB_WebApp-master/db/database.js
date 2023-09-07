@@ -1,5 +1,20 @@
+//postgres
+const { Pool } = require('pg');
+
+const pool = new Pool({
+  user: 'postgres',
+  password: 'NeonBeam79',
+  host: 'localhost',
+  database: 'lightbnb'
+});
+
+pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.log(response)})
+
+
 const properties = require("./json/properties.json");
 const users = require("./json/users.json");
+
+
 
 /// Users
 
@@ -9,14 +24,28 @@ const users = require("./json/users.json");
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithEmail = function (email) {
-  let resolvedUser = null;
-  for (const userId in users) {
-    const user = users[userId];
-    if (user && user.email.toLowerCase() === email.toLowerCase()) {
-      resolvedUser = user;
-    }
-  }
-  return Promise.resolve(resolvedUser);
+  console.log("get user with email function", email)
+  //const values = [`%${email}%`]
+  return pool
+    .query(`SELECT * FROM users 
+    WHERE email=$1;`, [email])
+    .then((result) => {
+      console.log("result is: ", result.rows[0])
+      return result.rows[0]
+    })
+    .catch((err) => {
+      console.log(err.message)
+    })
+
+  // return pool 
+  // .query(`SELECT * FROM properties LIMIT $1`, [limit])
+  // .then((result) => {
+  //   console.log(result.rows);
+  //   return result.rows;
+  // })
+  // .catch((err) => {
+  //   console.log(err.message);
+  // });
 };
 
 /**
@@ -25,8 +54,22 @@ const getUserWithEmail = function (email) {
  * @return {Promise<{}>} A promise to the user.
  */
 const getUserWithId = function (id) {
-  return Promise.resolve(users[id]);
+  console.log("get user id function")
+  return pool
+  .query(`SELECT * FROM users
+  WHERE id=$1;`, [id])
+  .then((result) => {
+    console.log("result from getuser id function: ",result)
+    return result.rows[0]
+    //return result[id]
+  })
+  .catch((err) => {
+    console.log(err.message)
+  })
+
+  // return Promise.resolve(users[id]);
 };
+
 
 /**
  * Add a new user to the database.
@@ -60,11 +103,22 @@ const getAllReservations = function (guest_id, limit = 10) {
  * @return {Promise<[{}]>}  A promise to the properties.
  */
 const getAllProperties = function (options, limit = 10) {
-  const limitedProperties = {};
+  /*const limitedProperties = {};
   for (let i = 1; i <= limit; i++) {
     limitedProperties[i] = properties[i];
   }
-  return Promise.resolve(limitedProperties);
+  return Promise.resolve(limitedProperties);*/
+
+  /*correct version from compass */
+  return pool 
+    .query(`SELECT * FROM properties LIMIT $1`, [limit])
+    .then((result) => {
+      // console.log(result.rows);
+      return result.rows;
+    })
+    .catch((err) => {
+      console.log(err.message);
+    });
 };
 
 /**
