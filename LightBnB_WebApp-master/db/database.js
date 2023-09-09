@@ -143,15 +143,47 @@ const getAllProperties = function (options, limit = 10) {
   return Promise.resolve(limitedProperties);*/
 
   /*correct version from compass */
-  return pool 
-    .query(`SELECT * FROM properties LIMIT $1`, [limit])
-    .then((result) => {
-      // console.log(result.rows);
-      return result.rows;
-    })
-    .catch((err) => {
-      console.log(err.message);
-    });
+
+  const queryParams = []
+
+  let queryString = `
+  SELECT properties.*, avg(property_reviews.rating) as average_rating
+  FROM properties
+  JOIN property_Reviews ON properties.id = property_id
+  `;
+
+  if(options.city){
+    queryParams.push(`%${options.city}%`);
+    queryString += `WHERE city LIKE $${queryParams.length}`;
+  }
+
+  queryParams.push(limit);
+  queryString+= `
+  GROUP BY properties.id
+  ORDER BY cost_per_night
+  LIMIT $${queryParams.length};
+  `;
+
+  console.log(queryString, queryParams)
+
+  return pool.query(queryString, queryParams).then((res) => res.rows);
+
+  // return pool 
+    // .query(`SELECT properties.*, avg(property_reviews.rating) as average_rating
+    // FROM properties
+    // LEFT JOIN property_reviews ON properties.id = property_id
+    // WHERE city LIKE '%ancouv%'
+    // GROUP BY properties.id
+    // HAVING avg(property_reviews.rating) >= 4
+    // ORDER BY cost_per_night
+    // LIMIT 10`)
+    // .then((result) => {
+    //   // console.log(result.rows);
+    //   return result.rows;
+    // })
+    // .catch((err) => {
+    //   console.log(err.message);
+    // });
 };
 
 /**
