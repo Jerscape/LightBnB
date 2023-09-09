@@ -13,6 +13,7 @@ pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.l
 
 const properties = require("./json/properties.json");
 const users = require("./json/users.json");
+const { query } = require('express');
 
 
 
@@ -157,33 +158,55 @@ const getAllProperties = function (options, limit = 10) {
     queryString += `WHERE city LIKE $${queryParams.length}`;
   }
 
+
+  //if a specific owner id is passed
+  if(options.owner_id){
+    //push ownerid onto query params
+    queryParams.push(`${options.owner_id}`)
+    queryString+= `AND owner_id =$${queryParams.length}`
+  }
+
+  console.log("logging options: ", options)
+  console.log("logging query params:", queryParams)
+
+  //if min and max price passed
+  if(options.minimum_price_per_night || options.maximum_price_per_night){
+    if(options.minimum_price_per_night && !options.maximum_price_per_night){
+      queryParams.push(`${options.minimum_price_per_night}`)
+      queryParams+= `AND $${queryParams.length}`
+
+    } else if (options.maximum_price_per_night && !options.minimum_price_per_night) {
+      queryParams.push(`${options.maximum_price_per_night}`)
+      queryString+= `AND $${queryParams.length}`
+
+    } else if (options.minimum_price_per_night && options.maximum_price_per_night) {
+      queryParams.push(`${options.minimum_price_per_night}`)
+      let minPriceIndex = queryParams.length;
+      queryParams.push(`${options.maximum_price_per_night}`);
+      let maxPriceIndex = queryParams.length;
+      queryString+= `AND $${properties.cost_per_night} >= $${minPriceIndex} AND properties.cost_per_night <= $${maxPriceIndex})`
+    }
+    
+  }
+
+  if(options.minimum_rating){
+    queryParams.push(`${options.minimum_rating}`)
+    queryString+= `AND $${queryParams.length}`
+
+  }
+
+  console.log("logging query params:", queryParams)
+
   queryParams.push(limit);
   queryString+= `
   GROUP BY properties.id
   ORDER BY cost_per_night
-  LIMIT $${queryParams.length};
-  `;
+  LIMIT $${queryParams.length}`; //END OF QUERY STRING WITH SEMICOLON
 
   console.log(queryString, queryParams)
 
   return pool.query(queryString, queryParams).then((res) => res.rows);
 
-  // return pool 
-    // .query(`SELECT properties.*, avg(property_reviews.rating) as average_rating
-    // FROM properties
-    // LEFT JOIN property_reviews ON properties.id = property_id
-    // WHERE city LIKE '%ancouv%'
-    // GROUP BY properties.id
-    // HAVING avg(property_reviews.rating) >= 4
-    // ORDER BY cost_per_night
-    // LIMIT 10`)
-    // .then((result) => {
-    //   // console.log(result.rows);
-    //   return result.rows;
-    // })
-    // .catch((err) => {
-    //   console.log(err.message);
-    // });
 };
 
 /**
