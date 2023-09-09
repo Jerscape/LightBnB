@@ -151,19 +151,20 @@ const getAllProperties = function (options, limit = 10) {
   SELECT properties.*, avg(property_reviews.rating) as average_rating
   FROM properties
   JOIN property_Reviews ON properties.id = property_id
+  WHERE 1=1
   `;
 
   if(options.city){
     queryParams.push(`%${options.city}%`);
-    queryString += `WHERE city LIKE $${queryParams.length}`;
+    queryString += ` AND city LIKE $${queryParams.length} `;
   }
 
 
   //if a specific owner id is passed
   if(options.owner_id){
     //push ownerid onto query params
-    queryParams.push(`${options.owner_id}`)
-    queryString+= `AND owner_id =$${queryParams.length}`
+    queryParams.push(options.owner_id)
+    queryString+= ` AND owner_id = $${queryParams.length}`
   }
 
   console.log("logging options: ", options)
@@ -172,28 +173,30 @@ const getAllProperties = function (options, limit = 10) {
   //if min and max price passed
   if(options.minimum_price_per_night || options.maximum_price_per_night){
     if(options.minimum_price_per_night && !options.maximum_price_per_night){
-      queryParams.push(`${options.minimum_price_per_night}`)
-      queryParams+= `AND $${queryParams.length}`
+      queryParams.push(100*(options.minimum_price_per_night))
+      queryParams+= ` AND cost_per_night > $${queryParams.length}`
 
     } else if (options.maximum_price_per_night && !options.minimum_price_per_night) {
-      queryParams.push(`${options.maximum_price_per_night}`)
-      queryString+= `AND $${queryParams.length}`
+      queryParams.push(100*(options.maximum_price_per_night))
+      queryString+= ` AND cost_per_night < $${queryParams.length}`
 
     } else if (options.minimum_price_per_night && options.maximum_price_per_night) {
-      queryParams.push(`${options.minimum_price_per_night}`)
-      let minPriceIndex = queryParams.length;
-      queryParams.push(`${options.maximum_price_per_night}`);
+      queryParams.push(100*(options.minimum_price_per_night))
+      queryParams.push(100*(options.maximum_price_per_night));
+      let minPriceIndex = queryParams.length - 1;
       let maxPriceIndex = queryParams.length;
-      queryString+= `AND $${properties.cost_per_night} >= $${minPriceIndex} AND properties.cost_per_night <= $${maxPriceIndex})`
+      queryString+= ` AND cost_per_night > $${minPriceIndex} AND cost_per_night < $${maxPriceIndex}`
     }
     
   }
 
   if(options.minimum_rating){
-    queryParams.push(`${options.minimum_rating}`)
-    queryString+= `AND $${queryParams.length}`
+    queryParams.push(options.minimum_rating)
+    queryString+= ` AND rating > $${queryParams.length} `
 
   }
+
+
 
   console.log("logging query params:", queryParams)
 
