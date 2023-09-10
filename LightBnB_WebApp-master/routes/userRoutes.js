@@ -25,9 +25,9 @@ router.post("/", (req, res) => {
 router.post("/login", (req, res) => {
   const email = req.body.email;
   const password = req.body.password;
-  console.log("login route fired ")
+  
   database.getUserWithEmail(email).then((user) => {
-    console.log("this is user: ",user)
+    
     if (!user) {
       return res.send({ error: "no user with that id" });
     }
