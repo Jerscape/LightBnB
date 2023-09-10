@@ -39,7 +39,7 @@ This app possess the follow functionality:
 ## Getting Started 
 
 - Install all dependencies using the npm install command
-- Navigate to folder in terminat. Use command "npm run local"
+- Navigate to folder in terminal. Use command "npm run local"
 - Got to port 3000
 
 ## Project Structure
@@ -66,7 +66,14 @@ This app possess the follow functionality:
 │   ├── styles
 │   │   ├── main.css
 │   │   └── main.css.map
-│   └── index.html
+│   ├── index.html
+|   └── imgs
+|      ├── 1.listings.png
+|      ├── 2.Property Card.png
+|      ├── 3.Create new property.png
+|      ├── 4.Sign up.png
+│      └── 5.Search filter.png
+|       
 ├── routes
 │   ├── apiRoutes.js
 │   └── userRoutes.js

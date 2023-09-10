@@ -9,7 +9,7 @@ const pool = new Pool({
 });
 
 //LOAD UP AN INITIAL 10 PROPERTIES
-pool.query(`SELECT title FROM properties LIMIT 10;`).then(response => {console.log(response)})
+pool.query(`SELECT title FROM properties LIMIT 10;`)
 
 //REQUIRE STATEMENTS
 const properties = require("./json/properties.json");
@@ -19,13 +19,12 @@ const { query } = require('express');
 
 //GET USER WITH EMAIL
 const getUserWithEmail = function (email) {
-  console.log("get user with email function", email);
+  
   
   return pool
     .query(`SELECT * FROM users 
     WHERE email=$1;`, [email])
     .then((result) => {
-      console.log("result is: ", result.rows[0])
       return result.rows[0]
     })
     .catch((err) => {
@@ -35,12 +34,10 @@ const getUserWithEmail = function (email) {
 
 //GET USER WITH ID
 const getUserWithId = function (id) {
-  console.log("get user id function")
   return pool
   .query(`SELECT * FROM users
   WHERE id=$1;`, [id])
   .then((result) => {
-    console.log("result from getuser id function: ",result)
     return result.rows[0]
     //return result[id]
   })
@@ -52,7 +49,6 @@ const getUserWithId = function (id) {
 
 //ADD USER TO DATABASE
 const addUser = function (user) {
-  console.log("user passed to function:" , user)
   return pool
   .query(`INSERT INTO users (name, email, password)
   VALUES ($1, $2, $3)
@@ -82,7 +78,6 @@ const getAllReservations = function (guest_id, limit = 10) {
   LIMIT $2
   `, [guest_id, limit])
   .then((result)=> {
-    console.log("resultA: ", result.rows)
     return result.rows
   })
   .catch((err) => {
@@ -114,8 +109,6 @@ const getAllProperties = function (options, limit = 10) {
     queryString+= ` AND owner_id = $${queryParams.length}`
   }
 
-  console.log("logging options: ", options)
-  console.log("logging query params:", queryParams)
 
   //IF MINIMUM OR/AND MAXIMUM PRICE IS PASSED
   if(options.minimum_price_per_night || options.maximum_price_per_night){
@@ -123,7 +116,7 @@ const getAllProperties = function (options, limit = 10) {
     //minimum price only
     if(options.minimum_price_per_night && !options.maximum_price_per_night){
       queryParams.push(100*(options.minimum_price_per_night))
-      queryParams+= ` AND cost_per_night > $${queryParams.length}`
+      queryString+= ` AND cost_per_night > $${queryParams.length}`
 
     //maximum price only
     } else if (options.maximum_price_per_night && !options.minimum_price_per_night) {
@@ -171,7 +164,6 @@ const addProperty = function (property) {
   property.cost_per_night, property.street, property.city, property.province, property.post_code, property.country, property.parking_spaces, property.number_of_bathrooms,
   property.number_of_bedrooms])
   .then((result)=>{
-    console.log("result: ", result)
     return result.rows[0] //?
   })
   .catch((err) => {
